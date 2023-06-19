@@ -35,6 +35,9 @@ ifeq ($(UNAME), Darwin)
   LIB_TAG=
 endif
 
+# Build shared lib by default
+SONIC_LIB=$(LIB_NAME)$(LIB_TAG)
+
 #CFLAGS=-Wall -Wno-unused-function -g -ansi -fPIC -pthread
 CFLAGS ?= -O3
 CFLAGS += -Wall -Wno-unused-function -ansi -fPIC -pthread
@@ -67,10 +70,10 @@ ifeq ($(USE_SPECTROGRAM), 1)
 endif
 EXTRA_OBJ=$(EXTRA_SRC:.c=.o)
 
-all: sonic sonic_lite $(LIB_NAME)$(LIB_TAG) libsonic.a libsonic_internal.a $(LIB_INTERNAL_NAME)$(LIB_TAG)
+all: sonic sonic_lite $(SONIC_LIB) libsonic_internal.a $(LIB_INTERNAL_NAME)$(LIB_TAG)
 
-sonic: main.o libsonic.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ main.o libsonic.a -lm $(FFTLIB)
+sonic: main.o $(SONIC_LIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ main.o $(SONIC_LIB) -lm $(FFTLIB)
 
 sonic_lite: wave.c main_lite.c sonic_lite.c sonic_lite.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ sonic_lite.c wave.c main_lite.c
@@ -118,8 +121,7 @@ install: sonic $(LIB_NAME)$(LIB_TAG) sonic.h
 	install -d $(DESTDIR)$(BINDIR) $(DESTDIR)$(INCDIR) $(DESTDIR)$(LIBDIR)
 	install sonic $(DESTDIR)$(BINDIR)
 	install sonic.h $(DESTDIR)$(INCDIR)
-	install libsonic.a $(DESTDIR)$(LIBDIR)
-	install $(LIB_NAME)$(LIB_TAG) $(DESTDIR)$(LIBDIR)
+	install $(SONIC_LIB) $(DESTDIR)$(LIBDIR)
 ifneq ($(UNAME), Darwin)
 	ln -sf $(LIB_NAME)$(LIB_TAG) $(DESTDIR)$(LIBDIR)/$(LIB_NAME)
 	ln -sf $(LIB_NAME)$(LIB_TAG) $(DESTDIR)$(LIBDIR)/$(LIB_NAME).0
@@ -128,8 +130,7 @@ endif
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/sonic
 	rm -f $(DESTDIR)$(INCDIR)/sonic.h
-	rm -f $(DESTDIR)$(LIBDIR)/libsonic.a
-	rm -f $(DESTDIR)$(LIBDIR)/$(LIB_NAME)$(LIB_TAG)
+	rm -f $(DESTDIR)$(LIBDIR)/$(SONIC_LIB)
 	rm -f $(DESTDIR)$(LIBDIR)/$(LIB_NAME).0
 	rm -f $(DESTDIR)$(LIBDIR)/$(LIB_NAME)
 
