@@ -70,49 +70,49 @@ EXTRA_OBJ=$(EXTRA_SRC:.c=.o)
 all: sonic sonic_lite $(LIB_NAME)$(LIB_TAG) libsonic.a libsonic_internal.a $(LIB_INTERNAL_NAME)$(LIB_TAG)
 
 sonic: main.o libsonic.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o sonic main.o libsonic.a -lm $(FFTLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ main.o libsonic.a -lm $(FFTLIB)
 
 sonic_lite: wave.c main_lite.c sonic_lite.c sonic_lite.h
-	$(CC) $(CFLAGS) $(LDFLAGS) -o sonic_lite sonic_lite.c wave.c main_lite.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ sonic_lite.c wave.c main_lite.c
 
 sonic.o: sonic.c sonic.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c sonic.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ sonic.c
 
 # Define a version of sonic with the internal names defined so others (i.e. Speedy)
 # can build new APIs that superscede the default API.
 sonic_internal.o: sonic.c sonic.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -DSONIC_INTERNAL -DSONIC_SPECTROGRAM -c sonic.c -o sonic_internal.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) -DSONIC_INTERNAL -DSONIC_SPECTROGRAM -o $@ -c sonic.c
 
 wave.o: wave.c wave.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c wave.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ wave.c
 
 main.o: main.c sonic.h wave.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c main.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ main.c
 
 spectrogram.o: spectrogram.c sonic.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -DSONIC_SPECTROGRAM -c spectrogram.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -DSONIC_SPECTROGRAM -c -o $@ spectrogram.c
 
 $(LIB_NAME)$(LIB_TAG): $(EXTRA_OBJ) sonic.o wave.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $(SHARED_OPT) -Wl,$(SONAME)$(LIB_NAME) $(EXTRA_OBJ) sonic.o -o $(LIB_NAME)$(LIB_TAG) $(FFTLIB) wave.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHARED_OPT) -Wl,$(SONAME)$(LIB_NAME) $(EXTRA_OBJ) sonic.o -o $@ $(FFTLIB) wave.o
 ifneq ($(UNAME), Darwin)
 	ln -sf $(LIB_NAME)$(LIB_TAG) $(LIB_NAME)
 	ln -sf $(LIB_NAME)$(LIB_TAG) $(LIB_NAME).0
 endif
 
 $(LIB_INTERNAL_NAME)$(LIB_TAG): $(EXTRA_OBJ) sonic_internal.o spectrogram.o wave.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $(SHARED_OPT) -Wl,$(SONAME)$(LIB_INTERNAL_NAME) $(EXTRA_OBJ) sonic_internal.o spectrogram.o -o $(LIB_INTERNAL_NAME)$(LIB_TAG) $(FFTLIB)  wave.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SHARED_OPT) -Wl,$(SONAME)$(LIB_INTERNAL_NAME) $(EXTRA_OBJ) sonic_internal.o spectrogram.o -o $@ $(FFTLIB)  wave.o
 ifneq ($(UNAME), Darwin)
 	ln -sf $(LIB_INTERNAL_NAME)$(LIB_TAG) $(LIB_INTERNAL_NAME)
 	ln -sf $(LIB_INTERNAL_NAME)$(LIB_TAG) $(LIB_INTERNAL_NAME).0
 endif
 
 libsonic.a: $(EXTRA_OBJ) sonic.o wave.o
-	$(AR) cqs libsonic.a $(EXTRA_OBJ) sonic.o wave.o
+	$(AR) cqs $@ $(EXTRA_OBJ) sonic.o wave.o
 
 # Define a version of sonic with the internal names defined so others (i.e. Speedy)
 # can build new APIs that superscede the default API.
 libsonic_internal.a: $(EXTRA_OBJ) sonic_internal.o wave.o
-	$(AR) cqs libsonic_internal.a $(EXTRA_OBJ) sonic_internal.o wave.o
+	$(AR) cqs $@ $(EXTRA_OBJ) sonic_internal.o wave.o
 
 install: sonic $(LIB_NAME)$(LIB_TAG) sonic.h
 	install -d $(DESTDIR)$(BINDIR) $(DESTDIR)$(INCDIR) $(DESTDIR)$(LIBDIR)
